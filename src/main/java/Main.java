@@ -92,27 +92,28 @@ public class Main {
 
         if (option == 1) {
             if ((type == 1)) {
-                withdrawal(_USER, "C");
+                withdrawal("C");
             } else if (type == 2) {
-                deposit(_USER, "C");
+                deposit("C");
             } else {
-                balance(_USER, "C");
+                getBalance("C");
             }
         } else if (option == 2) {
             if ((type == 1)) {
-                withdrawal(_USER, "S");
+                withdrawal("S");
             } else if (type == 2) {
-                deposit(_USER, "S");
+                deposit("S");
             } else {
-                balance(_USER, "S");
+                getBalance("S");
             }
         } else {
             transactionOptions();
         }
     }
 
-    public static void withdrawal(User _USER, String accountType) {
-        System.out.println("How much would you like to withdraw from your " + getAccountName(accountType) + " account?");
+    public static void withdrawal(String accountType) {
+        System.out.println("How much would you like to withdraw from your " + getAccountType(accountType) + " account?");
+        System.out.println("Balance: " + df.format(Database.getBalance(_USER.getName(), accountType)));
         System.out.print("Amount: ");
         Scanner reader = new Scanner(System.in);
         double amount = reader.nextDouble();
@@ -120,25 +121,22 @@ public class Main {
         if (amount == 0) {
             System.out.println();
             System.out.println("You cannot withdraw $0.00");
-        } else if (!_USER.confirmBalance(amount, accountType)) {
+        } else if (amount > Database.getBalance(_USER.getName(), accountType)) {
             System.out.println();
-            System.out.println("You do not have enough in your " + getAccountName(accountType) + " account to withdraw $" + df.format(amount));
+            System.out.println("You do not have enough in your " + getAccountType(accountType) + " account to withdraw $" + df.format(amount));
         } else {
-            if (Objects.equals(accountType, "C")) {
-                _USER.setChequing(_USER.getChequing() - amount);
-            } else {
-                _USER.setSavings(_USER.getSavings() - amount);
-            }
+            Database.withdraw(_USER.getName(), accountType, amount);
             System.out.println();
-            System.out.println("You have withdrawn $" + df.format(amount) + " from your " + getAccountName(accountType) + " account.");
+            System.out.println("You have withdrawn $" + df.format(amount) + " from your " + getAccountType(accountType) + " account.");
         }
 
         System.out.println();
         transactionOptions();
     }
 
-    public static void deposit(User _USER, String accountType) {
-        System.out.println("How much would you like to deposit in your " + getAccountName(accountType) + " account?");
+    public static void deposit(String accountType) {
+        System.out.println("How much would you like to deposit in your " + getAccountType(accountType) + " account?");
+        System.out.println("Balance: " + df.format(Database.getBalance(_USER.getName(), accountType)));
         System.out.print("Amount: ");
         Scanner reader = new Scanner(System.in);
         double amount = reader.nextDouble();
@@ -147,28 +145,24 @@ public class Main {
             System.out.println();
             System.out.println("You cannot deposit $0.00 or less.");
         } else {
-            if (Objects.equals(accountType, "C")) {
-                _USER.setChequing(_USER.getChequing() + amount);
-            } else {
-                _USER.setSavings(_USER.getSavings() + amount);
-            }
+            Database.deposit(_USER.getName(), accountType, amount);
             System.out.println();
-            System.out.println("You have deposited $" + df.format(amount) + " in your " + getAccountName(accountType) + " account.");
+            System.out.println("You have deposited $" + df.format(amount) + " in your " + getAccountType(accountType) + " account.");
         }
 
         System.out.println();
         transactionOptions();
     }
 
-    public static void balance(User _USER, String accountType) {
-        System.out.println("Your " + getAccountName(accountType) + " balance is currently: $" +
-                df.format((Objects.equals(accountType, "C") ? _USER.getChequing() : _USER.getSavings())));
+    public static void getBalance(String accountType) {
+        System.out.println("Your " + getAccountType(accountType) + " balance is currently: $" +
+                df.format(Database.getBalance(_USER.getName(), accountType)));
 
         System.out.println();
         transactionOptions();
     }
 
-    public static String getAccountName(String accountType) {
+    public static String getAccountType(String accountType) {
         return (Objects.equals(accountType, "C")) ? "chequing" : "savings";
     }
 }
